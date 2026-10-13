@@ -12,6 +12,12 @@ pub enum AppError {
     Internal,
     InvalidPage,
     PageNotFound,
+    LocalAuthoringForbidden,
+    InvalidDraftRequest,
+    DraftConflict,
+    DraftChanged,
+    PayloadTooLarge,
+    DraftValidation(std::collections::BTreeMap<&'static str, &'static str>),
 }
 
 #[derive(Serialize)]
@@ -22,7 +28,36 @@ struct ErrorBody {
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
+        if let Self::DraftValidation(fields) = &self {
+            return (StatusCode::UNPROCESSABLE_ENTITY, Json(serde_json::json!({"code": "draft_validation", "message": "Check the highlighted fields.", "fields": fields}))).into_response();
+        }
         let (status, code, message) = match self {
+            Self::DraftChanged => (
+                StatusCode::CONFLICT,
+                "draft_changed",
+                "This draft changed since you loaded it. Reload the saved version before saving again.",
+            ),
+            Self::LocalAuthoringForbidden => (
+                StatusCode::FORBIDDEN,
+                "local_authoring_forbidden",
+                "Use the configured local authoring workflow.",
+            ),
+            Self::InvalidDraftRequest => (
+                StatusCode::BAD_REQUEST,
+                "invalid_draft_request",
+                "Provide the required draft fields and a valid ID and writing type. Extra fields are not accepted.",
+            ),
+            Self::DraftConflict => (
+                StatusCode::CONFLICT,
+                "draft_conflict",
+                "This slug or composition ID is already in use. Check the saved draft or choose another slug.",
+            ),
+            Self::PayloadTooLarge => (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                "payload_too_large",
+                "The draft request is too large.",
+            ),
+            Self::DraftValidation(_) => unreachable!(),
             Self::InvalidPage => (
                 StatusCode::BAD_REQUEST,
                 "invalid_page",

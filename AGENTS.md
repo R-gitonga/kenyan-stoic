@@ -18,7 +18,7 @@ Build Between Thoughts, a personal publication for poems, reflections, and writi
 - Application-wide state: React Context for concerns such as authentication, using `AuthProvider` and `useAuth()`.
 - Maintain one repository containing `backend/`, `frontend/`, and `docs/`.
 - Focus on a functional application first. Defer hosting selection and provider-specific infrastructure until requested.
-- The application includes PostgreSQL-backed published article retrieval and pagination, a Between Thoughts homepage, React reading pages, and published-content prerendering. Author authentication, editing, and publishing controls remain unimplemented. Do not claim checks pass before tool evidence confirms it.
+- The application includes PostgreSQL-backed published article retrieval/pagination, the Between Thoughts homepage, React reading pages, prerendering, and opt-in local draft creation/listing/editing/private preview. Author authentication and publishing controls remain unimplemented. Do not claim checks pass before tool evidence confirms it.
 - Public articles use build-time React prerendering with client hydration; development pages fetch through the API. A Rust export command supplies only published content to the build. No JavaScript server runtime is required for serving the built pages. Content changes require rebuilding static pages.
 - Markdown is the confirmed content format. Disable raw HTML, retain safe URL filtering, and preserve poem line breaks and stanza spacing. Discuss a format change before adopting it.
 
@@ -82,6 +82,8 @@ Use React Router 7 for navigation and protected administration routes. Frontend 
 - Support writing beyond Stoicism; avoid hard-coding every piece into a philosophy category.
 - Keep drafts private. Public endpoints, archives, feeds, and previews intended for readers must return only published content.
 - Administrative previews and mutations require backend authorization, even when frontend routes are guarded.
+- The author deferred login for the MVP. Sprints 003–004 permit explicitly enabled local-only draft creation, listing, editing, and preview, restricted by a loopback listener and validated local request origin/host/custom header. This is not production authentication. Keep authoring disabled by default and absent from production frontend routes; add authentication before online authoring.
+- Draft editing uses optimistic concurrency via expected_updated_at. Preserve unsaved input during failures, conflicts, and query refreshes; only replace it after successful save or explicit reload. Preview reuses PostBody and never publishes or exports private writing.
 - Begin with one author and no public registration. Add comments, memberships, newsletters, or other features only when requested.
 - Do not present invented personal experiences or AI-generated poems as the author's real writing. Label sample content clearly.
 

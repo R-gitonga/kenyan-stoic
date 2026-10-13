@@ -25,6 +25,17 @@ This is a reviewable record of ideas discovered while building Between Thoughts.
 - Dependencies / tradeoffs: Requires the publishing feature and the eventual build/deployment mechanism. Publication and build completion are separate events; failures must be visible rather than silently reporting completion. Cache invalidation may also be needed for the chosen host.
 - Review / updates: Awaiting author review. On 2026-10-07, Sprint 002 extended static output to homepage and paginated listings; future publication rebuilds must replace those pages as well as articles. Automatic rebuilding remains outside current implementation.
 
+### IDEA-002 — Autosave and recovery of unsaved writing
+
+- Added: 2026-10-13
+- Status: Proposed
+- Origin: Sprint 004's explicit-save editor and unsaved navigation warnings.
+- Suggestion: Add deliberate autosave or a recoverable local composition buffer, with clear saved/unsaved/conflict indicators.
+- Benefit: Reduce lost writing after browser crashes, accidental navigation, or network interruptions.
+- Why later: The current MVP uses explicit Save and departure warnings. First verify the basic editing and publication workflows.
+- Dependencies / tradeoffs: Autosave must respect optimistic concurrency and never overwrite another tab's work. Local storage of private writing needs a clear recovery/clear-data policy, and must not be confused with a server save.
+- Review / updates: Awaiting author review; not implemented or moved into active scope.
+
 ## Entry template
 
 Copy this template for each new idea:

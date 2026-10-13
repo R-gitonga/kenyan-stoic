@@ -24,13 +24,19 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         .map_err(|_| "Database migration failed; inspect the schema and migration history")?;
     let listener = tokio::net::TcpListener::bind(config.listen_addr).await?;
     tracing::info!(address = %config.listen_addr, "API listening");
-    axum::serve(listener, routes::router(AppState { pool: pool.clone() }))
-        .with_graceful_shutdown(async {
-            if tokio::signal::ctrl_c().await.is_err() {
-                tracing::warn!("Shutdown signal listener failed");
-            }
-        })
-        .await?;
+    if config.authoring.is_some() {
+        tracing::info!("Local-only draft authoring enabled; do not expose this listener publicly");
+    }
+    axum::serve(
+        listener,
+        routes::router_with_authoring(AppState { pool: pool.clone() }, config.authoring),
+    )
+    .with_graceful_shutdown(async {
+        if tokio::signal::ctrl_c().await.is_err() {
+            tracing::warn!("Shutdown signal listener failed");
+        }
+    })
+    .await?;
     pool.close().await;
     Ok(())
 }

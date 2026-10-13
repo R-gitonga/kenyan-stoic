@@ -4,9 +4,9 @@ A personal literary journal for poems, reflections, and ideas across philosophy 
 
 ## Current state
 
-Sprint 001 implements reading a published piece: a PostgreSQL schema, published-only Axum endpoint, a mobile-first React reading page, safe Markdown, and build-time prerendering. Sprint 002 adds the Between Thoughts homepage, a published-only paginated writing list, logo placeholder, and homepage/listing prerendering. Author login, editing, publishing controls, logo artwork, and hosting remain deferred.
+Sprint 001 implements reading a published piece: a PostgreSQL schema, published-only Axum endpoint, a mobile-first React reading page, safe Markdown, and build-time prerendering. Sprint 002 adds the Between Thoughts homepage, a published-only paginated writing list, logo placeholder, and homepage/listing prerendering. Sprint 003 adds local draft creation/read-back; Sprint 004 adds the local draft list, version-protected editing, and safe unsaved Markdown preview. Author login, publishing controls, logo artwork, and hosting remain deferred.
 
-The normal Vite production build and Vitest runner are currently blocked by Node subprocess restrictions in this Codex Windows environment. Backend tests, TypeScript checks, in-process React checks, and static browser layout checks have passed. Sprints 001 and 002 remain verification pending for the standard frontend build/tests and production browser hydration.
+The normal Vite production build and Vitest runner are currently blocked by Node subprocess restrictions in this Codex Windows environment. Backend tests, TypeScript checks, in-process React checks, and static browser layout checks have passed. Sprints remain verification pending where documented: standard frontend build/tests and production browser hydration are unresolved, and authoring screens still require responsive browser verification.
 
 ## Stack and architecture
 
@@ -101,6 +101,27 @@ The build type-checks, bundles browser assets, builds the React prerenderer, and
 The intermediate renderer lives in ignored `frontend/.generated/`. Database access is a build prerequisite, not a browser or static-serving dependency. Future hosting must serve the generated article directories correctly. Hosting selection is deferred.
 
 ## Verification
+
+### Local draft authoring (Sprints 003–004)
+
+For persistent local authoring, add `ENABLE_LOCAL_AUTHORING=true` and `BACKEND_ADDR=127.0.0.1:3000` to ignored `backend/.env`, then restart the backend. Changing `.env` does not reconfigure an already-running process. Terminal environment variables override `.env` values.
+
+If creating a draft returns `404`, author routes may be disabled or an older backend may still be running. Restart with local authoring enabled and retry Save from the original editor. A failed create does not produce a saved confirmation page; its composition URL can return not found. Keep unsaved text before refreshing or leaving the editor.
+
+Stop any existing backend, then run from `backend/`:
+
+```powershell
+$env:ENABLE_LOCAL_AUTHORING = 'true'
+cargo run --locked
+```
+
+With `pnpm dev` running, open `http://localhost:5173/dev/drafts/new`. Save a title, unique slug, optional excerpt, writing type, and Markdown body. The saved confirmation URL can be refreshed to read the draft from PostgreSQL. Open `/dev/drafts` to find saved pieces and select a title to edit. Preview shows unsaved Markdown using the public reading renderer. Save changes persists; Reload saved version fetches the latest stored draft and warns before discarding unsaved text. Version checks prevent overwriting another tab, and failures retain your input. Publishing remains deferred. Drafts stay absent from all public endpoints and build exports.
+
+Authoring is disabled by default and requires a loopback backend listener. Default frontend origins are `http://localhost:5173` and `http://127.0.0.1:5173`; set `LOCAL_AUTHORING_ORIGIN` for a different exact HTTP loopback origin/port. Browser writes require the matching Origin, backend Host, and `X-Local-Authoring: 1` header; GET reads can use a matching Referer origin when Origin is absent. The frontend API module supplies the custom header. This is a local development workflow, not production authentication. Do not expose it through tunnels or public proxies. Set `$env:ENABLE_LOCAL_AUTHORING = 'false'` and restart to disable it.
+
+Sprint 003 verification on 2026-10-13: 13 backend checks, Rust formatting/compilation/Clippy, frontend TypeScript, and supplemental editor/API component checks passed. Vite/Vitest remain blocked by `spawn EPERM`; browser checks were stopped because the computer-use tool could not reliably determine Chrome's URL. Responsive editor verification remains pending. See `docs/sprints/SPRINT-003.md`.
+
+Sprint 004 verification on 2026-10-13: all 16 backend checks, Rust formatting/Clippy, TypeScript, and supplemental list/edit/preview/conflict checks passed. Responsive browser checks and normal Vitest/build execution remain pending. See `docs/sprints/SPRINT-004.md`; IDEA-002 in the backlog proposes future autosave/recovery.
 
 From `backend/`:
 

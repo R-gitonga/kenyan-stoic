@@ -11,6 +11,8 @@ export function SetupPage() {
       <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Between Thoughts</p>
       <h1 className="font-serif text-4xl leading-tight sm:text-5xl">A place for reflection.</h1>
       <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">Philosophy, poetry, and everyday life. Our writing space begins here.</p>
+      <Link className="mt-5 inline-flex min-h-11 items-center underline underline-offset-4" to="/dev/drafts/new">Write a private draft</Link>
+      <Link className="mt-2 inline-flex min-h-11 items-center underline underline-offset-4" to="/dev/drafts">Return to your drafts</Link>
       <section className="mt-8" aria-labelledby="samples-heading">
         <h2 id="samples-heading" className="text-lg font-semibold">Explore the sample writing</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">These development samples demonstrate the reading page. They are not the author's writing. Load them with the development seed script first.</p>

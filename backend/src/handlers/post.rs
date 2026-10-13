@@ -24,16 +24,7 @@ pub async fn list(
         .map(Json)
 }
 
-pub fn valid_slug(slug: &str) -> bool {
-    !slug.is_empty()
-        && slug.len() <= 160
-        && !slug.starts_with('-')
-        && !slug.ends_with('-')
-        && !slug.contains("--")
-        && slug
-            .bytes()
-            .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-')
-}
+pub use crate::models::post::valid_slug;
 
 pub async fn get_by_slug(
     State(state): State<AppState>,

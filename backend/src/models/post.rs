@@ -3,6 +3,17 @@ use serde::Serialize;
 use sqlx::FromRow;
 use uuid::Uuid;
 
+pub fn valid_slug(slug: &str) -> bool {
+    !slug.is_empty()
+        && slug.len() <= 160
+        && !slug.starts_with('-')
+        && !slug.ends_with('-')
+        && !slug.contains("--")
+        && slug
+            .bytes()
+            .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-')
+}
+
 #[derive(FromRow, Serialize)]
 pub struct PostSummary {
     pub id: Uuid,

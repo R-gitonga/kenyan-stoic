@@ -3,6 +3,7 @@ use std::{env, error::Error, net::SocketAddr};
 pub struct Config {
     pub database_url: String,
     pub listen_addr: SocketAddr,
+    pub authoring: Option<crate::routes::draft::LocalAuthoring>,
 }
 
 impl Config {
@@ -18,13 +19,31 @@ impl Config {
         if database_url.trim().is_empty() {
             return Err("DATABASE_URL must not be empty".into());
         }
-        let listen_addr = env::var("BACKEND_ADDR")
+        let listen_addr: SocketAddr = env::var("BACKEND_ADDR")
             .unwrap_or_else(|_| "127.0.0.1:3000".to_owned())
             .parse()
             .map_err(|_| "BACKEND_ADDR must be a valid IP address and port")?;
+        let authoring = match env::var("ENABLE_LOCAL_AUTHORING").as_deref() {
+            Ok("true") => {
+                let origins = match env::var("LOCAL_AUTHORING_ORIGIN") {
+                    Ok(origin) => vec![origin],
+                    Err(_) => vec![
+                        "http://127.0.0.1:5173".into(),
+                        "http://localhost:5173".into(),
+                    ],
+                };
+                Some(crate::routes::draft::LocalAuthoring::new(
+                    listen_addr,
+                    origins,
+                )?)
+            }
+            Ok("false") | Err(_) => None,
+            _ => return Err("ENABLE_LOCAL_AUTHORING must be true or false".into()),
+        };
         Ok(Self {
             database_url,
             listen_addr,
+            authoring,
         })
     }
 }

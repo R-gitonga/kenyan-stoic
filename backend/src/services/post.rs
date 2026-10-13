@@ -26,7 +26,7 @@ pub async fn list_published(
     })
 }
 
-fn database_error(error: sqlx::Error) -> AppError {
+pub(crate) fn database_error(error: sqlx::Error) -> AppError {
     tracing::error!("Published content query failed");
     match error {
         sqlx::Error::Database(_) | sqlx::Error::ColumnDecode { .. } | sqlx::Error::Decode(_) => {
